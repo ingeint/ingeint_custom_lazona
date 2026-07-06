@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="lazona_report_purchaseorder_document" inherit_id="purchase.report_purchaseorder_document" priority="80">
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address" t-value="False"/>
+        </xpath>
+        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <t t-set="information_block" t-value="False"/>
+        </xpath>
+        <xpath expr="//div[@class='page']/div[@class='oe_structure'][1]" position="after">
+            <div class="row mt-3 mb-3">
+                <div class="col-6">
+                    <div class="border p-2 h-100">
+                        <strong>PROVEEDOR</strong>
+                        <div t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone", "vat"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border p-2 h-100">
+                        <strong>DIRECCIÓN DE ENTREGA</strong>
+                        <div t-if="o.dest_address_id" t-field="o.dest_address_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        <div t-elif="o.picking_type_id and o.picking_type_id.warehouse_id and o.picking_type_id.warehouse_id.partner_id" t-field="o.picking_type_id.warehouse_id.partner_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//th[@name='th_description']/strong" position="replace">
+            <strong>Descripción</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_date_req']/strong" position="replace">
+            <strong>Fecha requerida</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_quantity']/strong" position="replace">
+            <strong>Cantidad</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_price_unit']/strong" position="replace">
+            <strong>Precio unitario</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_discount']/strong" position="replace">
+            <strong>Desc.</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_taxes']/strong" position="replace">
+            <strong>Impuestos</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_subtotal']/strong" position="replace">
+            <strong>Monto</strong>
+        </xpath>
+        <xpath expr="//t[@t-set='taxes']" position="replace">
+            <t t-set="taxes" t-value="', '.join([((tax.invoice_label or tax.name or '').replace('VAT', 'IVA').replace('purchases', 'compras').replace('purchase', 'compra')) for tax in line.taxes_id])"/>
+        </xpath>
+    </template>
+
+    <template id="lazona_report_purchasequotation_document" inherit_id="purchase.report_purchasequotation_document" priority="80">
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <t t-set="address" t-value="False"/>
+        </xpath>
+        <xpath expr="//t[@t-set='information_block']" position="replace">
+            <t t-set="information_block" t-value="False"/>
+        </xpath>
+        <xpath expr="//div[@class='page']/div[@class='oe_structure'][1]" position="after">
+            <div class="row mt-3 mb-3">
+                <div class="col-6">
+                    <div class="border p-2 h-100">
+                        <strong>PROVEEDOR</strong>
+                        <div t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone", "vat"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="border p-2 h-100">
+                        <strong>DIRECCIÓN DE ENTREGA</strong>
+                        <div t-if="o.dest_address_id" t-field="o.dest_address_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        <div t-elif="o.picking_type_id and o.picking_type_id.warehouse_id and o.picking_type_id.warehouse_id.partner_id" t-field="o.picking_type_id.warehouse_id.partner_id"
+                             t-options='{"widget": "contact", "fields": ["name", "address", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//h2" position="replace">
+            <h2 class="mt-4">Solicitud de Cotización <span t-field="o.name"/></h2>
+        </xpath>
+        <xpath expr="//th[@name='th_description']/strong" position="replace">
+            <strong>Descripción</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_expected_date']/strong" position="replace">
+            <strong>Fecha requerida</strong>
+        </xpath>
+        <xpath expr="//th[@name='th_quantity']/strong" position="replace">
+            <strong>Cantidad</strong>
+        </xpath>
+    </template>
+
+    <template id="lazona_purchase_document_tax_totals" inherit_id="purchase.document_tax_totals" priority="80">
+        <xpath expr="//td/strong[@t-out=&quot;subtotal['name']&quot;]" position="replace">
+            <t t-set="lazona_subtotal_label" t-value="'Monto base' if subtotal['name'] in ('Untaxed Amount', 'Untaxed amount', 'Subtotal') else subtotal['name']"/>
+            <strong t-out="lazona_subtotal_label">Monto base</strong>
+        </xpath>
+        <xpath expr="//t[@t-call='account.tax_groups_totals']" position="replace">
+            <t t-call="ingeint_custom_lazona.lazona_purchase_tax_groups_totals"/>
+        </xpath>
+        <xpath expr="//tr[@t-if=&quot;'formatted_rounding_amount' in tax_totals and tax_totals.get('rounding_amount') != 0&quot;]/td[1]" position="replace">
+            <td>Redondeo</td>
+        </xpath>
+    </template>
+
+    <template id="lazona_purchase_tax_groups_totals">
+        <t t-foreach="tax_totals['groups_by_subtotal'][subtotal_to_show]" t-as="amount_by_group">
+            <t t-set="display_tax_base" t-value="tax_totals['display_tax_base']"/>
+            <t t-set="lazona_tax_group_label" t-value="(amount_by_group['tax_group_name'] or '').replace('VAT', 'IVA').replace('purchases', 'compras').replace('purchase', 'compra')"/>
+            <tr>
+                <t t-if="tax_totals['display_tax_base']">
+                    <td>
+                        <span t-out="lazona_tax_group_label"/>
+                        <span t-if="not amount_by_group['hide_base_amount']" class="text-nowrap"> sobre
+                            <t t-esc="amount_by_group['formatted_tax_group_base_amount']"/>
+                        </span>
+                    </td>
+                    <td class="text-end o_price_total">
+                        <span class="text-nowrap" t-out="amount_by_group['formatted_tax_group_amount']">1.05</span>
+                    </td>
+                </t>
+                <t t-else="">
+                    <td>
+                        <span t-out="lazona_tax_group_label">IVA 16%</span>
+                    </td>
+                    <td class="text-end o_price_total">
+                        <span class="text-nowrap" t-out="amount_by_group['formatted_tax_group_amount']">4.05</span>
+                    </td>
+                </t>
+            </tr>
+        </t>
+    </template>
+</odoo>
