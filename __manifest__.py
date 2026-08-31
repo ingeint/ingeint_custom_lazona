@@ -13,12 +13,15 @@
         "account",
         "sale_management",
         "ingeint_custom",
+        "stock",
+        "odoo_pos_ingeint"
     ],
     "data": [
         "security/ir.model.access.csv",
         "data/data.xml",
         "views/product_pricelist_views.xml",
         "views/templates.xml",
+        "views/product_catalog.xml",
     ],
     "demo": [
         "demo/demo.xml",
