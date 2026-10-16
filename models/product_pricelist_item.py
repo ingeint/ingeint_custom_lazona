@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import _, api, fields, models
-from odoo.tools import formatLang
+from odoo.tools import float_round, formatLang
 
 
 class ProductPricelistItem(models.Model):
@@ -35,6 +35,13 @@ class ProductPricelistItem(models.Model):
         string="Precio convertido",
         compute="_compute_lazona_price_conversion",
     )
+    lazona_round_tax_included = fields.Boolean(
+        string="Redondear con IVA incluido",
+        help="Aplica el redondeo y la tarifa adicional sobre el precio con los "
+             "impuestos de venta del producto y guarda el precio sin impuesto "
+             "equivalente. Ej.: con redondeo 1,00 hacia arriba y 16 % de IVA, "
+             "21,29 + IVA = 24,70 sube a 25,00 y el precio queda en 21,55.",
+    )
 
     @api.depends(
         "pricelist_id",
@@ -52,6 +59,8 @@ class ProductPricelistItem(models.Model):
         "price_discount",
         "price_surcharge",
         "price_round",
+        "price_round_method",
+        "lazona_round_tax_included",
         "price_min_margin",
         "price_max_margin",
         "base",
@@ -140,6 +149,25 @@ class ProductPricelistItem(models.Model):
                 item._lazona_format_amount(amount, source_currency),
                 item._lazona_format_amount(converted_amount, target_currency),
             )
+
+    def _round_formula_price(self, price, product, convert):
+        taxes = self._lazona_get_round_taxes(product)
+        if not taxes:
+            return super()._round_formula_price(price, product, convert)
+        currency = self.currency_id or self.env.company.currency_id
+        price_included = taxes.compute_all(price, currency=currency, quantity=1.0, product=product)["total_included"]
+        price_included = super()._round_formula_price(price_included, product, convert)
+        return taxes.with_context(force_price_include=True).compute_all(
+            price_included, currency=currency, quantity=1.0, product=product)["total_excluded"]
+
+    def _lazona_get_round_taxes(self, product):
+        """Impuestos de venta que el catálogo suma al precio (los no incluidos
+        en el precio), si la regla redondea con IVA incluido."""
+        self.ensure_one()
+        if not self.lazona_round_tax_included or not self.price_round:
+            return self.env["account.tax"]
+        company = self.company_id or self.env.company
+        return product.taxes_id.filtered(lambda tax: tax.company_id == company and not tax.price_include)
 
     def _lazona_get_product_for_price(self):
         self.ensure_one()

@@ -20,6 +20,7 @@
         "security/ir.model.access.csv",
         "data/data.xml",
         "views/product_pricelist_views.xml",
+        "views/product_pricelist_item_views.xml",
         "views/templates.xml",
         "views/product_catalog.xml",
     ],

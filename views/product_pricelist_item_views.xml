@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ingeint_custom_lazona_product_pricelist_item_form_inherit" model="ir.ui.view">
+        <field name="name">ingeint.custom.lazona.product.pricelist.item.form</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="ingeint_custom.product_pricelist_item_form_view_gross_margin"/>
+        <field name="arch" type="xml">
+            <field name="price_round_method" position="after">
+                <field name="lazona_round_tax_included" invisible="compute_price != 'formula' or not price_round"/>
+            </field>
+        </field>
+    </record>
+</odoo>
