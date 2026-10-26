@@ -70,9 +70,11 @@ class LazonaPricelistReportWizard(models.TransientModel):
     @api.depends("pricelist_id")
     def _compute_conversion_currency_id(self):
         for wizard in self:
-            currency = wizard.pricelist_id and wizard.pricelist_id.lazona_get_conversion_currency()
-            if currency == wizard.pricelist_id.currency_id:
-                currency = False
+            currency = self.env["res.currency"]
+            if wizard.pricelist_id:
+                currency = wizard.pricelist_id.lazona_get_conversion_currency()
+                if currency == wizard.pricelist_id.currency_id:
+                    currency = self.env["res.currency"]
             wizard.conversion_currency_id = currency
 
     # ------------------------------------------------------------------

@@ -4,7 +4,7 @@ import io
 import zipfile
 
 from odoo import fields
-from odoo.tests.common import TransactionCase, tagged
+from odoo.tests.common import Form, TransactionCase, tagged
 
 
 @tagged('post_install', '-at_install', 'lazona_pricelist_report')
@@ -79,6 +79,13 @@ class TestPricelistReport(TransactionCase):
     def test_without_conversion(self):
         line = self._line(self._wizard(show_conversion=False), self.product)
         self.assertNotIn('converted_total', line)
+
+    def test_form_without_pricelist(self):
+        # Desde el menú el asistente abre sin lista de precios.
+        with Form(self.env['lazona.pricelist.report.wizard']) as form:
+            self.assertFalse(form.conversion_currency_id)
+            form.pricelist_id = self.pricelist
+            self.assertEqual(form.conversion_currency_id, self.other_currency)
 
     def test_export_xlsx(self):
         wizard = self._wizard()
