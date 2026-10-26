@@ -7,7 +7,9 @@
                 <t t-set="company" t-value="data['company']"/>
                 <t t-set="currency" t-value="data['currency']"/>
                 <t t-set="conversion_currency" t-value="data['conversion_currency']"/>
-                <t t-call="web.external_layout">
+                <!-- Encabezado compacto: el de la compañía (dirección) es más alto que
+                     el margen y se monta sobre la tabla en un listado largo. -->
+                <t t-call="web.internal_layout">
                     <!-- Fuente del sistema: con la fuente web de la compañía
                          wkhtmltopdf dibuja el texto como trazos y el PDF de
                          miles de productos pasa de ~1 MB a cientos de MB. -->
