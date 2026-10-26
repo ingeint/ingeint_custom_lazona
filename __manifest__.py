@@ -8,7 +8,7 @@
     "author": "INGEINT SA",
     "website": "http://www.ingeint.com",
     "category": "Sales",
-    "version": "0.1",
+    "version": "0.2",
     "depends": [
         "account",
         "sale_management",
@@ -23,6 +23,9 @@
         "views/product_pricelist_item_views.xml",
         "views/templates.xml",
         "views/product_catalog.xml",
+        "wizards/pricelist_report_wizard_views.xml",
+        "report/pricelist_report.xml",
+        "report/pricelist_report_templates.xml",
     ],
     "demo": [
         "demo/demo.xml",

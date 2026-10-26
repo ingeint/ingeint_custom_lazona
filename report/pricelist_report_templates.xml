@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_pricelist_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="data" t-value="report_data[doc.id]"/>
+                <t t-set="company" t-value="data['company']"/>
+                <t t-set="currency" t-value="data['currency']"/>
+                <t t-set="conversion_currency" t-value="data['conversion_currency']"/>
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h4>Lista de precios: <span t-out="data['pricelist'].name"/></h4>
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <strong>Moneda:</strong> <span t-out="currency.name"/>
+                            </div>
+                            <div class="col-4">
+                                <strong>Fecha:</strong> <span t-out="data['date_display']"/>
+                            </div>
+                            <div class="col-4" t-if="conversion_currency">
+                                <strong>Tasa:</strong>
+                                1 <span t-out="currency.name"/> =
+                                <span t-out="format_rate(data['rate'])"/>
+                                <span t-out="conversion_currency.name"/>
+                            </div>
+                        </div>
+                        <table class="table table-sm o_main_table" style="font-size: 11px;">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Producto</th>
+                                    <th>UdM</th>
+                                    <th t-if="data['show_stock']" class="text-end">Existencia</th>
+                                    <th class="text-end">Precio sin IVA <span t-out="currency.name"/></th>
+                                    <th class="text-end">Precio con IVA <span t-out="currency.name"/></th>
+                                    <t t-if="conversion_currency">
+                                        <th class="text-end">Precio sin IVA <span t-out="conversion_currency.name"/></th>
+                                        <th class="text-end">Precio con IVA <span t-out="conversion_currency.name"/></th>
+                                    </t>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['groups'].items()" t-as="group">
+                                    <tr class="bg-light">
+                                        <td t-att-colspan="5 + (1 if data['show_stock'] else 0) + (2 if conversion_currency else 0)">
+                                            <strong t-out="group[0] or 'Sin categoría'"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-foreach="group[1]" t-as="line">
+                                        <td><span t-out="line['default_code']"/></td>
+                                        <td><span t-out="line['name']"/></td>
+                                        <td><span t-out="line['uom']"/></td>
+                                        <td t-if="data['show_stock']" class="text-end">
+                                            <span t-out="line['qty_available']" t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <span t-out="line['price_untaxed']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                        <td class="text-end">
+                                            <strong t-out="line['price_total']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                        <t t-if="conversion_currency">
+                                            <td class="text-end">
+                                                <span t-out="line['converted_untaxed']" t-options="{'widget': 'monetary', 'display_currency': conversion_currency}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <strong t-out="line['converted_total']" t-options="{'widget': 'monetary', 'display_currency': conversion_currency}"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        <p class="text-muted" style="font-size: 10px;">
+                            Precios calculados con las reglas vigentes de la lista (margen, redondeo, tarifa adicional y márgenes).
+                            Total de productos: <span t-out="len(data['lines'])"/>.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
