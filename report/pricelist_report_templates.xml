@@ -8,7 +8,10 @@
                 <t t-set="currency" t-value="data['currency']"/>
                 <t t-set="conversion_currency" t-value="data['conversion_currency']"/>
                 <t t-call="web.external_layout">
-                    <div class="page">
+                    <!-- Fuente del sistema: con la fuente web de la compañía
+                         wkhtmltopdf dibuja el texto como trazos y el PDF de
+                         miles de productos pasa de ~1 MB a cientos de MB. -->
+                    <div class="page" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
                         <h4>Lista de precios: <span t-out="data['pricelist'].name"/></h4>
                         <div class="row mb-3">
                             <div class="col-4">

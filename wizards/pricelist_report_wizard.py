@@ -87,7 +87,11 @@ class LazonaPricelistReportWizard(models.TransientModel):
 
     def _get_products(self):
         self.ensure_one()
-        domain = [("sale_ok", "=", True)]
+        company = self._get_company()
+        domain = [
+            ("sale_ok", "=", True),
+            "|", ("company_ids", "=", False), ("company_ids", "in", company.ids),
+        ]
         if self.categ_ids:
             domain.append(("categ_id", "child_of", self.categ_ids.ids))
         if self.product_ids:
@@ -177,13 +181,18 @@ class LazonaPricelistReportWizard(models.TransientModel):
         if not data["lines"]:
             raise UserError(_("No hay productos con precio para los filtros indicados."))
 
+    def _check_products(self):
+        if not self.with_company(self._get_company())._get_products():
+            raise UserError(_("No hay productos para los filtros indicados."))
+
     # ------------------------------------------------------------------
     # Acciones
     # ------------------------------------------------------------------
 
     def action_print_pdf(self):
         self.ensure_one()
-        self._check_lines(self._get_report_data())
+        # Los precios se calculan una sola vez, al renderizar el reporte.
+        self._check_products()
         return self.env.ref("ingeint_custom_lazona.action_report_pricelist").report_action(self)
 
     def action_export_xlsx(self):
