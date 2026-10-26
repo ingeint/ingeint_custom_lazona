@@ -27,6 +27,11 @@
                                 <span t-out="conversion_currency.name"/>
                             </div>
                         </div>
+                        <div class="row mb-3" t-if="data['warehouse']">
+                            <div class="col-12">
+                                <strong>Almacén:</strong> <span t-out="data['warehouse'].name"/>
+                            </div>
+                        </div>
                         <table class="table table-sm o_main_table" style="font-size: 11px;">
                             <thead>
                                 <tr>

@@ -87,6 +87,21 @@ class TestPricelistReport(TransactionCase):
             form.pricelist_id = self.pricelist
             self.assertEqual(form.conversion_currency_id, self.other_currency)
 
+    def test_warehouse_stock(self):
+        warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.company.id)], limit=1)
+        other = self.env['stock.warehouse'].create({
+            'name': 'Almacén report', 'code': 'WHRP', 'company_id': self.company.id})
+        self.product.type = 'product'
+        self.env['stock.quant']._update_available_quantity(self.product, warehouse.lot_stock_id, 7.0)
+        line = self._line(self._wizard(show_stock=True), self.product)
+        self.assertEqual(line['qty_available'], 7.0)
+        line = self._line(self._wizard(show_stock=True, warehouse_id=warehouse.id), self.product)
+        self.assertEqual(line['qty_available'], 7.0)
+        lines = self._wizard(warehouse_id=other.id, only_available=True)._get_report_lines()
+        self.assertNotIn(self.product, [line['product'] for line in lines])
+        line = self._line(self._wizard(show_stock=True, warehouse_id=other.id), self.product)
+        self.assertEqual(line['qty_available'], 0.0)
+
     def test_export_xlsx(self):
         wizard = self._wizard()
         action = wizard.action_export_xlsx()

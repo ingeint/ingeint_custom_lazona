@@ -45,6 +45,14 @@ class LazonaPricelistReportWizard(models.TransientModel):
         domain=[("sale_ok", "=", True)],
         help="Vacío: todos los productos vendibles.",
     )
+    warehouse_id = fields.Many2one(
+        "stock.warehouse",
+        string="Almacén",
+        domain="[('company_id', '=', company_id)]",
+        help="Existencia y filtro «Solo con existencia» de este almacén. "
+             "Vacío: todos los almacenes de la compañía.",
+    )
+    company_id = fields.Many2one("res.company", compute="_compute_company_id")
     only_available = fields.Boolean(string="Solo con existencia")
     hide_zero_price = fields.Boolean(string="Ocultar productos sin precio", default=True)
     show_stock = fields.Boolean(string="Mostrar existencia")
@@ -66,6 +74,16 @@ class LazonaPricelistReportWizard(models.TransientModel):
         if self.env.context.get("active_model") == "product.pricelist":
             return self.env.context.get("active_id")
         return False
+
+    @api.depends("pricelist_id")
+    def _compute_company_id(self):
+        for wizard in self:
+            wizard.company_id = wizard._get_company()
+
+    @api.onchange("pricelist_id")
+    def _onchange_pricelist_id_warehouse(self):
+        if self.warehouse_id and self.warehouse_id.company_id != self._get_company():
+            self.warehouse_id = False
 
     @api.depends("pricelist_id")
     def _compute_conversion_currency_id(self):
@@ -98,7 +116,12 @@ class LazonaPricelistReportWizard(models.TransientModel):
             domain.append(("id", "in", self.product_ids.ids))
         if self.only_available:
             domain.append(("qty_available", ">", 0))
-        return self.env["product.product"].search(domain, order="categ_id, default_code, name, id")
+        # Con almacén en el contexto, qty_available (columna y filtro) es la
+        # existencia de ese almacén.
+        products = self.env["product.product"]
+        if self.warehouse_id:
+            products = products.with_context(warehouse=self.warehouse_id.id)
+        return products.search(domain, order="categ_id, default_code, name, id")
 
     def _get_report_lines(self):
         """Precio de cada producto con las reglas de la lista, tal como lo
@@ -173,6 +196,7 @@ class LazonaPricelistReportWizard(models.TransientModel):
             "date": self.date,
             "date_display": format_datetime(self.env, self.date, dt_format="dd/MM/yyyy HH:mm"),
             "show_stock": self.show_stock,
+            "warehouse": self.warehouse_id,
             "lines": lines,
             "groups": groups,
         }
@@ -274,6 +298,10 @@ class LazonaPricelistReportWizard(models.TransientModel):
             sheet.write(row, 0, _("Tasa"), label_fmt)
             sheet.write(row, 1, "1 %s = %s %s" % (
                 data["currency"].name, self._format_rate(data["rate"]), data["conversion_currency"].name))
+            row += 1
+        if data["warehouse"]:
+            sheet.write(row, 0, _("Almacén"), label_fmt)
+            sheet.write(row, 1, data["warehouse"].name)
             row += 1
 
         row += 1
