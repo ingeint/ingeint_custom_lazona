@@ -21,7 +21,7 @@ class LazonaPricelistReportWizard(models.TransientModel):
         required=True,
         default=lambda self: self._default_pricelist(),
     )
-    currency_id = fields.Many2one(related="pricelist_id.currency_id")
+    currency_id = fields.Many2one(related="pricelist_id.currency_id", string="Moneda")
     date = fields.Datetime(
         string="Fecha",
         required=True,
@@ -52,7 +52,7 @@ class LazonaPricelistReportWizard(models.TransientModel):
         help="Existencia y filtro «Solo con existencia» de este almacén. "
              "Vacío: todos los almacenes de la compañía.",
     )
-    company_id = fields.Many2one("res.company", compute="_compute_company_id")
+    company_id = fields.Many2one("res.company", string="Compañía", compute="_compute_company_id")
     only_available = fields.Boolean(string="Solo con existencia")
     hide_zero_price = fields.Boolean(string="Ocultar productos sin precio", default=True)
     show_stock = fields.Boolean(string="Mostrar existencia")
