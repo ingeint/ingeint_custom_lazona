@@ -8,13 +8,13 @@
     "author": "INGEINT SA",
     "website": "http://www.ingeint.com",
     "category": "Sales",
-    "version": "0.2",
+    "version": "0.3",
     "depends": [
         "account",
         "sale_management",
         "ingeint_custom",
         "stock",
-        "odoo_pos_ingeint"
+        "point_of_sale",
     ],
     "data": [
         "security/ir.model.access.csv",

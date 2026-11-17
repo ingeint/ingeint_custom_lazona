@@ -34,7 +34,10 @@ class TestRoundTaxIncluded(TransactionCase):
         return rule._compute_price(product, 1.0, product.uom_id, False, self.currency)
 
     def _catalog(self, product):
-        return product.with_context(pricelist=self.pricelist.id).catalog_price_tax_included
+        """Precio de la lista con IVA incluido, como lo cobra el POS."""
+        price = self.pricelist._get_product_price(product, 1.0, currency=self.currency)
+        return product.taxes_id.compute_all(
+            price, currency=self.currency, quantity=1.0, product=product)['total_included']
 
     def test_rounds_tax_included_price_up(self):
         rule = self._rule()

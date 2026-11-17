@@ -2,23 +2,19 @@
 <odoo>
     <data>
 
+        <!-- Ubicación del producto en la tarjeta del catálogo (cotizaciones / compras). -->
         <record id="product_product_zona_inherit_catalog" model="ir.ui.view">
             <field name="name">product.product.zona.catalog.inherit</field>
             <field name="model">product.product</field>
-            <field name="inherit_id" ref="odoo_pos_ingeint.product_product_kanban_inherit_catalog"/>
+            <field name="inherit_id" ref="stock.product_view_kanban_catalog"/>
             <field name="arch" type="xml">
-                <xpath expr="//kanban" position="inside">
-                    <field name="description_pickingout"/>
-                </xpath>
-
-                <xpath expr="//div[@t-if='record.available_after_quotes.raw_value &lt;= 0'][field[@name='available_after_quotes']]"
-                       position="after">
-                        <div>
-                            <strong>Ubicación:</strong>
-                            <span class="text-primary fw-bold">
-                                <field name="description_pickingout"/>
-                            </span>
-                        </div>
+                <xpath expr="//div[@name='o_kanban_qty_available']" position="after">
+                    <div t-if="record.description_pickingout.raw_value">
+                        <strong>Ubicación:</strong>
+                        <span class="text-primary fw-bold">
+                            <field name="description_pickingout"/>
+                        </span>
+                    </div>
                 </xpath>
             </field>
         </record>
